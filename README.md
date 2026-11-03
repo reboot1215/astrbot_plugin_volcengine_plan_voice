@@ -47,7 +47,7 @@ git clone https://github.com/reboot1215/astrbot_plugin_volcengine_plan_voice.git
 
 ## 📄 License
 
-[AGPL-3.0](./LICENSE)
+本项目以 [AGPL-3.0](./LICENSE) 协议发布。Copyright (c) 2026 reboot1215
 
 ## 🙏 引用与声明
 
