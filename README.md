@@ -37,6 +37,48 @@ git clone https://github.com/reboot1215/astrbot_plugin_volcengine_plan_voice.git
 
 或在 WebUI「插件」页面选择从 zip/仓库安装。
 
+### 依赖装不上怎么办（WebUI 报 `error code 1`）
+
+插件自身不带依赖，`websockets` 与 `imageio-ffmpeg` 由 AstrBot 安装时自动 `pip install`。如果 WebUI 报：
+
+```
+Failed to install dependencies for plugin astrbot_plugin_volcengine_plan_voice: Installation failed with error code 1
+```
+
+**绝大多数情况是 pip 索引（源）不可用，不是插件的问题。** 按顺序查：
+
+**① 找到当前用的源。** 看 AstrBot 日志里的 `Looking in indexes: <地址>` 那一行。
+
+**② 验证这个源到底有没有包。** 把 `<源>` 换成上一步的地址：
+
+```bash
+pip install --dry-run --ignore-installed 'imageio-ffmpeg>=0.5' -i <源>
+```
+
+出现 `Could not find a version that satisfies ... (from versions: none)` 就是源不可用或缺这个版本。
+注意**响应快不等于可用**：实测有镜像 0.15 秒响应但缺目标版本，也有镜像直接返回 HTTP 567。
+
+**③ 换源。** 改 AstrBot 的 `data/cmd_config.json`：
+
+```json
+"pypi_index_url": "https://pypi.tuna.tsinghua.edu.cn/simple",
+"pip_install_arg": "--extra-index-url https://pypi.org/simple"
+```
+
+`--extra-index-url` 是兜底：镜像缺某个版本时还能回落到官方源。该文件带 UTF-8 BOM，用编辑器直接改，别用脚本覆盖成无 BOM，改完重启 AstrBot 再装一次。
+
+**④ 或手动补装**，装到 AstrBot 的专用依赖目录（Docker 部署即容器内执行）：
+
+```bash
+python -m pip install -r requirements.txt \
+  --target /AstrBot/data/site-packages \
+  --upgrade --upgrade-strategy only-if-needed
+```
+
+`data/site-packages` 在数据卷上，容器重建不丢；装进系统 `site-packages` 只在镜像层，容器重建即失效。
+
+> ⚠️ 手动装时别对 `websockets` 用无版本约束的 `--ignore-installed`：会被解析到 16+，顶掉宿主已有的 `websockets<16` 依赖（如 `lark-oapi` 要求 `<16`）。本插件的 `requirements.txt` 已锁 `<16`，照它装就不会撞。
+
 ## ⚙️ 配置
 
 1. 在 AstrBot WebUI →「服务提供商」中新建提供商：
@@ -44,6 +86,8 @@ git clone https://github.com/reboot1215/astrbot_plugin_volcengine_plan_voice.git
    - **文字转语音**：提供商类型选 `volcengine_plan_tts`
 2. 填入火山方舟 **Agent Plan 专属 API Key**（获取方式见 [官方文档](https://ark.volcengine.com/region:cn-beijing/docs/agent-plan-personal-voice-model)）
 3. TTS 可按需选择音色（下拉列表）；两个 Provider 的端点地址均已提供默认值，一般无需修改。
+
+**更新日志**：[CHANGELOG.md](./CHANGELOG.md)
 
 ## 📄 License
 

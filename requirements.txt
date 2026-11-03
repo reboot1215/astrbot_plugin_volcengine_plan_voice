@@ -1,2 +1,7 @@
-websockets>=12.0
+# websockets is capped below 16 on purpose.
+# AstrBot installs plugin dependencies into data/site-packages, which takes
+# priority over system site-packages. websockets 16+ was rejected by some
+# hosts that already ship websockets<16 (e.g. lark-oapi requires <16), so an
+# unconstrained install could break those packages. 15.x covers our needs.
+websockets>=12.0,<16
 imageio-ffmpeg>=0.5

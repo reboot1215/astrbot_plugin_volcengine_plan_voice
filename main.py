@@ -20,7 +20,7 @@ except ImportError:  # 兼容以非包方式加载本模块的场景
     "astrbot_plugin_volcengine_plan_voice",
     "reboot1215",
     "通过火山方舟 Agent Plan 为 AstrBot 同时提供文字转语音（TTS，doubao-seed-tts-2.0）与语音转文字（STT，doubao-seed-asr-2.0），一次安装、一份 API Key 即可使用。",
-    "1.0.0",
+    "1.0.1",
     "https://ark.volcengine.com/region:cn-beijing/docs/agent-plan-personal-voice-model",
 )
 class MyPlugin(Star):

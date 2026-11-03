@@ -37,6 +37,48 @@ git clone https://github.com/reboot1215/astrbot_plugin_volcengine_plan_voice.git
 
 Alternatively, install from a zip/repo in the WebUI "Plugins" page.
 
+### Dependencies failed to install (WebUI reports `error code 1`)
+
+The plugin ships no vendored dependencies; `websockets` and `imageio-ffmpeg` are `pip install`ed by AstrBot at install time. If the WebUI reports:
+
+```
+Failed to install dependencies for plugin astrbot_plugin_volcengine_plan_voice: Installation failed with error code 1
+```
+
+**In almost all cases the pip index (mirror) is unusable — it is not a plugin bug.** Check in order:
+
+**① Find the index in use.** Look for the `Looking in indexes: <url>` line in the AstrBot log.
+
+**② Verify that index actually carries the package.** Replace `<index>` with the URL from step 1:
+
+```bash
+pip install --dry-run --ignore-installed 'imageio-ffmpeg>=0.5' -i <index>
+```
+
+`Could not find a version that satisfies ... (from versions: none)` means the index is down or does not mirror that version.
+Note **fast response does not mean usable**: one mirror answered in 0.15s but lacked the version, another returned HTTP 567 outright.
+
+**③ Switch the index.** Edit AstrBot's `data/cmd_config.json`:
+
+```json
+"pypi_index_url": "https://pypi.tuna.tsinghua.edu.cn/simple",
+"pip_install_arg": "--extra-index-url https://pypi.org/simple"
+```
+
+`--extra-index-url` is the fallback: if the mirror lacks a version, pip can still reach the official index. The file is UTF-8 **with BOM** — edit it with an editor, do not rewrite it as BOM-less, then restart AstrBot and install the plugin again.
+
+**④ Or install manually** into AstrBot's dedicated dependency directory (run inside the container for Docker deployments):
+
+```bash
+python -m pip install -r requirements.txt \
+  --target /AstrBot/data/site-packages \
+  --upgrade --upgrade-strategy only-if-needed
+```
+
+`data/site-packages` lives on the data volume and survives container rebuilds; packages installed into the system `site-packages` sit in the image layer and are lost on rebuild.
+
+> ⚠️ When installing manually, do not use an unconstrained `--ignore-installed` for `websockets`: it resolves to 16+, shadowing existing `websockets<16` requirements on the host (e.g. `lark-oapi` requires `<16`). This plugin's `requirements.txt` pins `<16`, so following it is safe.
+
 ## ⚙️ Configuration
 
 1. In the AstrBot WebUI → "Service Providers", create a new provider:
@@ -44,6 +86,8 @@ Alternatively, install from a zip/repo in the WebUI "Plugins" page.
    - **Text-to-Speech**: choose provider type `volcengine_plan_tts`
 2. Fill in the Volcengine Ark **Agent Plan dedicated API Key** (see the [official docs](https://ark.volcengine.com/region:cn-beijing/docs/agent-plan-personal-voice-model))
 3. For TTS, pick a voice from the dropdown as needed; both providers ship with default endpoint URLs that generally need no changes.
+
+**Changelog**: [CHANGELOG.md](./CHANGELOG.md)
 
 ## 📄 License
 
