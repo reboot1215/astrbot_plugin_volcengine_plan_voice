@@ -32,7 +32,7 @@
 ```bash
 # 在 AstrBot 的 data/plugins 目录下
 git clone https://github.com/reboot1215/astrbot_plugin_volcengine_plan_voice.git
-# 依赖会自动安装；STT 建议本机安装 ffmpeg
+# 依赖会自动安装（含 imageio-ffmpeg，内置 ffmpeg 二进制，无需手动装 ffmpeg）
 ```
 
 或在 WebUI「插件」页面选择从 zip/仓库安装。
