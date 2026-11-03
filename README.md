@@ -1,13 +1,13 @@
 # astrbot_plugin_volcengine_plan_voice
 
+[English](./README_EN.md) | 简体中文
+
 **火山方舟语音套件（语音转文字 + 文字转语音）** —— 一个 AstrBot 插件同时提供 STT 与 TTS 两个 Provider：
 
 - 🔤 **语音转文字（STT）**：豆包流式语音识别大模型 2.0（`doubao-seed-asr-2.0`），WebSocket 流式调用
 - 🔊 **文字转语音（TTS）**：豆包语音合成大模型 2.0（`doubao-seed-tts-2.0`），支持音色下拉选择与匹配矫正
 
 已订阅火山方舟 **Agent Plan（个人版）** 即可使用专属 API Key 配置即用，无需另开火山引擎语音合成/识别服务。一次安装、一份 Key，在 AstrBot 服务提供商中分别添加即可使用。
-
-> 也可以分别安装独立的 [文字转语音（火山方舟）](https://github.com/reboot1215/astrbot_plugin_volcengine_plan_tts) 与 [语音转文字（火山方舟）](https://github.com/reboot1215/astrbot_plugin_volcengine_plan_stt) 插件。
 
 ## ✨ 特性
 
