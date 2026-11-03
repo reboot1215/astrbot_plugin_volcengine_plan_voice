@@ -58,4 +58,4 @@ git clone https://github.com/reboot1215/astrbot_plugin_volcengine_plan_voice.git
 | [AstrBot](https://github.com/AstrBotDevs/AstrBot) | 开源框架（AGPL-3.0） | 本插件基于 AstrBot 的 Provider 插件 API（`register_provider_adapter` / `TTSProvider` / `STTProvider`）开发，运行于 AstrBot 4.29+。未复制其源码。 |
 | 火山方舟 Agent Plan API | 火山引擎商业云服务 | 通过其专属 HTTP/WebSocket 端点调用豆包语音大模型（`doubao-seed-tts-2.0` / `doubao-seed-asr-2.0`）。仅调用公开接口，不包含、不分发其任何代码。 |
 
-**AI 编写声明**：本插件代码由 AI（WorkBuddy 智能设计助手）辅助编写，由仓库所有者 [reboot1215](https://github.com/reboot1215) 完成需求定义、功能迭代、调试、测试与维护，并对代码负责。
+**AI 编写声明**：本插件代码由 AI（大语言模型）辅助编写，由仓库所有者 [reboot1215](https://github.com/reboot1215) 完成需求定义、功能迭代、调试、测试与维护，并对代码负责。
