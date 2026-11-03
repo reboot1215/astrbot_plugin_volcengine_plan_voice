@@ -54,6 +54,56 @@ DEFAULT_PLAN_ASR_URL = "wss://openspeech.bytedance.com/api/v3/plan/sauc/bigmodel
 PLAN_ASR_URL = DEFAULT_PLAN_ASR_URL  # 兼容旧引用
 DEFAULT_RESOURCE_ID = "volc.seedasr.sauc.duration"
 
+# ---- ffmpeg 探测（环境变量 > 系统 PATH > imageio-ffmpeg 自带二进制）----
+_FFMPEG_PATH: str | None = None
+_FFMPEG_REPORTED = False
+
+
+def _resolve_ffmpeg(report: bool = False) -> str | None:
+    """按优先级解析可用的 ffmpeg 可执行文件路径，结果缓存。
+
+    优先级：
+    1. 环境变量 ASTRBOT_FFMPEG_PATH（显式指定）
+    2. 系统 PATH 中的 ffmpeg（shutil.which）
+    3. pip 包 imageio-ffmpeg 自带的静态二进制（requirements.txt 已含，随插件自动安装）
+    """
+    global _FFMPEG_PATH
+    if _FFMPEG_PATH is not None:
+        return _FFMPEG_PATH
+
+    env_path = os.environ.get("ASTRBOT_FFMPEG_PATH", "").strip()
+    if env_path and os.path.isfile(env_path):
+        _FFMPEG_PATH = env_path
+        if report:
+            logger.info("[volcengine_plan_stt] ffmpeg(环境变量 ASTRBOT_FFMPEG_PATH): %s", env_path)
+        return _FFMPEG_PATH
+
+    which_path = shutil.which("ffmpeg")
+    if which_path:
+        _FFMPEG_PATH = which_path
+        if report:
+            logger.info("[volcengine_plan_stt] ffmpeg(系统 PATH): %s", which_path)
+        return _FFMPEG_PATH
+
+    try:
+        import imageio_ffmpeg
+
+        bundled = imageio_ffmpeg.get_ffmpeg_exe()
+        _FFMPEG_PATH = bundled
+        if report:
+            logger.info("[volcengine_plan_stt] ffmpeg(imageio-ffmpeg 自带二进制): %s", bundled)
+        return _FFMPEG_PATH
+    except Exception:
+        if report and not _FFMPEG_REPORTED:
+            logger.warning(
+                "[volcengine_plan_stt] ffmpeg 未检测到（环境变量 / 系统 PATH / imageio-ffmpeg 均不可用）。"
+                "仅 16kHz/单声道/16bit 音频可正常识别。"
+                "修复方式任选其一：① pip install imageio-ffmpeg；② 系统安装 ffmpeg 并加入 PATH；"
+                "③ 设置环境变量 ASTRBOT_FFMPEG_PATH。"
+            )
+            _FFMPEG_REPORTED = True
+        return None
+
 
 def _generate_header(
     message_type: int,
@@ -192,6 +242,16 @@ class ProviderVolcenginePlanSTT(STTProvider):
         # 链接可换：留空或未配置时回落到官方默认端点
         self.url = self._resolve_url(provider_config.get("url"))
         logger.info("[volcengine_plan_stt] 提供商初始化: url=%s", self.url)
+        # 启动时探测 ffmpeg 并在日志中报告（环境变量 > 系统 PATH > imageio-ffmpeg 自带二进制）
+        ffmpeg = _resolve_ffmpeg(report=True)
+        if ffmpeg:
+            logger.info("[volcengine_plan_stt] ffmpeg 就绪: %s", ffmpeg)
+        else:
+            logger.warning(
+                "[volcengine_plan_stt] 未检测到 ffmpeg：仅当输入音频为 16kHz/单声道/16bit 时可正常识别。"
+                "修复方式任选其一：① pip install imageio-ffmpeg；② 系统安装 ffmpeg 并加入 PATH；"
+                "③ 设置环境变量 ASTRBOT_FFMPEG_PATH 指向 ffmpeg 可执行文件。"
+            )
 
     @staticmethod
     def _resolve_url(raw_url) -> str:
@@ -221,7 +281,7 @@ class ProviderVolcenginePlanSTT(STTProvider):
         if rate == 16000 and channels == 1 and sampwidth == 2:
             return path
 
-        ffmpeg = shutil.which("ffmpeg")
+        ffmpeg = _resolve_ffmpeg()
         if not ffmpeg:
             logger.warning(
                 "音频为 %sHz/%sch/%sbit，非 ASR 要求的 16kHz/单声道/16bit，"
