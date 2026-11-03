@@ -2,7 +2,7 @@ name: astrbot_plugin_volcengine_plan_voice
 display_name: 火山方舟语音套件（语音转文字+文字转语音）
 desc: 通过火山方舟 Agent Plan 专属接口为 AstrBot 同时提供语音转文字（STT，doubao-seed-asr-2.0）与文字转语音（TTS，doubao-seed-tts-2.0）。一次安装、一份 API Key，在服务提供商中分别添加即可使用。
 help: https://ark.volcengine.com/region:cn-beijing/docs/agent-plan-personal-voice-model
-version: v0.0.1
+version: v1.0.0
 short_desc: 用火山方舟 Agent Plan 订阅一次装齐语音转文字与文字转语音，无需另开语音服务
 author: reboot1215
 repo: https://github.com/reboot1215/astrbot_plugin_volcengine_plan_voice
